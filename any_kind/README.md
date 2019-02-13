@@ -1,4 +1,4 @@
-# The same function for different types
+# The same function for the same type but different kinds
 
 Currently one has to do:
 
