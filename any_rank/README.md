@@ -30,8 +30,33 @@ contains
 With generics one can do:
 
 ```fortran
-    <T> function f(x)
-    <T>, intent(in) :: x
+    real(<T>) function f(x)
+    real(<T>), intent(in) :: x
     f = x + 1
     end function
+```
+
+or using macros:
+
+```fortran
+interface f
+    module procedure f_real32
+    module procedure f_real64
+    module procedure f_real128
+end interface
+
+contains
+
+    DEFINE MACRO :: f_procs()
+        MACRO integer i, thiskind
+            MACRO DO i=1, size(real_kinds)
+                MACRO thiskind = real_kinds(i)
+                    function f_%%thiskind(x) result(r)
+                    real(thiskind) :: x,r
+                    r = x + 1
+                    end function
+        MACRO END DO
+    END MACRO
+
+    EXPAND f_procs()
 ```
