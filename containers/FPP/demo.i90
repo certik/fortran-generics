@@ -1,0 +1,656 @@
+# 1 "demo.F90"
+module SparseTable_mod
+   implicit none
+   private
+   
+
+
+
+
+
+
+# 1 "./map.inc" 1 
+! args SparseTable, SparseTableIterator, integer, real, Pair
+
+   public :: SparseTable
+   public :: SparseTableIterator
+   public :: Pair
+
+
+
+
+
+
+# 1 "./map_decl.inc" 1 
+! args SparseTable, integer, real, SparseTableIterator
+
+
+
+
+
+# 1 "./pair_decl.inc" 1 
+! Args:  Pair, integer, real
+
+   type :: Pair
+      type (integer) :: key
+      type (real) :: value
+   end type Pair
+
+   
+# 8 "./map_decl.inc" 2 
+
+
+
+
+
+
+
+   
+
+
+
+
+# 1 "./set_decl.inc" 1 
+! args Set, Pair, SetIterator
+
+
+
+
+
+# 1 "./vector_decl.inc" 1 
+! args iVector, integer, iVectorIterator
+
+# 1 "./macros.inc" 1 
+# 3
+
+
+# 7
+
+
+# 11
+
+   
+
+
+
+   
+# 4 "./vector_decl.inc" 2 
+
+
+   type :: iVector
+      private
+      type (integer), allocatable :: elements(:)
+   contains
+      procedure :: size => size_iVector
+      procedure :: back => back_iVector
+      procedure :: push_back => push_back_iVector
+      procedure :: at => at_iVector
+      procedure :: begin => begin_iVector
+      procedure :: end => end_iVector
+   end type iVector
+
+   type :: iVectorIterator
+      private
+      class (iVector), pointer :: referenc => null()
+      integer :: current = -1
+   contains
+      procedure :: get => get_iVector
+      procedure :: next => next_iVector
+   end type iVectorIterator
+
+
+# 8 "./set_decl.inc" 2 
+
+
+
+
+   
+
+
+
+
+# 1 "./vector_decl.inc" 1 
+! args tVector, Pair, tVectorIterator
+
+# 1 "./macros.inc" 1 
+
+
+
+
+
+
+
+
+
+
+
+   
+
+
+
+   
+# 4 "./vector_decl.inc" 2 
+
+
+   type :: tVector
+      private
+      type (Pair), allocatable :: elements(:)
+   contains
+      procedure :: size => size_tVector
+      procedure :: back => back_tVector
+      procedure :: push_back => push_back_tVector
+      procedure :: at => at_tVector
+      procedure :: begin => begin_tVector
+      procedure :: end => end_tVector
+   end type tVector
+
+   type :: tVectorIterator
+      private
+      class (tVector), pointer :: referenc => null()
+      integer :: current = -1
+   contains
+      procedure :: get => get_tVector
+      procedure :: next => next_tVector
+   end type tVectorIterator
+
+
+# 18 "./set_decl.inc" 2 
+
+
+
+
+   
+
+# 1 "./macros.inc" 1 
+
+
+
+
+
+
+
+
+
+
+
+   
+
+
+
+   
+# 25 "./set_decl.inc" 2 
+
+
+
+   type :: Set
+      private
+      type (tVector) :: items
+      type (iVector) :: parents
+      type (iVector) :: lefts
+      type (iVector) :: rights
+      type (iVector) :: heights
+      
+      integer :: root = -1
+      integer :: tsize = 0
+      integer :: next_free = 0
+   contains
+      procedure :: size => size_Set
+      procedure :: insert => insert_Set
+      procedure :: find => find_Set
+      procedure :: begin => begin_Set
+      procedure :: end => end_Set
+   end type Set
+
+   type :: SetIterator
+      private
+      class (Set), pointer :: reference => null()
+      integer :: current = -1
+   contains
+      procedure :: get => get_Set
+      procedure :: next => next_Set
+   end type SetIterator
+
+
+# 21 "./map_decl.inc" 2 
+
+
+
+
+
+
+# 1 "./macros.inc" 1 
+
+
+
+
+
+
+
+
+
+
+
+   
+
+
+
+   
+# 28 "./map_decl.inc" 2 
+
+
+   type :: SparseTable
+      private
+      type (Set) :: tree
+   contains
+      procedure :: size => size_SparseTable
+      procedure :: insert_key_value => insert_key_value_SparseTable
+      procedure :: insert_pair => insert_pair_SparseTable
+      generic :: insert => insert_key_value
+      generic :: insert => insert_pair
+      procedure :: begin => begin_SparseTable
+      procedure :: end => end_SparseTable
+   end type SparseTable
+
+   type :: SparseTableIterator
+      private
+      type (SparseTable), pointer :: reference => null()
+      type (SetIterator) :: current
+   contains
+      procedure :: next => next_SparseTable
+      procedure :: get_key => get_key_SparseTable
+      procedure :: get_value => get_value_SparseTable
+      procedure :: equal => equal_SparseTable
+      procedure :: not_equal => not_equal_SparseTable
+      generic :: operator(==) => equal
+      generic :: operator(/=) => not_equal
+   end type SparseTableIterator
+# 13 "./map.inc" 2 
+
+   contains
+
+# 1 "./map_impl.inc" 1 
+! args SparseTable, integer, real, SparseTableIterator
+
+
+
+
+
+# 1 "./set_impl.inc" 1 
+! args Set, Pair, SetIterator
+
+
+
+
+
+# 1 "./vector_impl.inc" 1 
+! args iVector, integer, iVectorIterator
+
+# 1 "./macros.inc" 1 
+
+
+
+
+
+
+
+
+
+
+
+   
+
+
+
+   
+# 4 "./vector_impl.inc" 2 
+
+
+integer function size_iVector(this) result(size_)
+   class (iVector), intent(in) :: this
+   size_ = size(this%elements)
+end function
+
+function at_iVector(this, i) result(at)
+   type (integer), pointer :: at
+   class (iVector), target :: this
+   integer, intent(in) :: i
+
+   at => this%elements(i)
+
+end function
+
+function back_iVector(this) result(back)
+   type (integer), pointer :: back
+   class (iVector), target :: this
+
+   back => this%elements(size(this%elements))
+end function
+
+
+subroutine push_back_iVector (this, item)
+   class (iVector), intent(inout) :: this
+   type (integer), intent(in) :: item
+   
+   type (integer), allocatable :: tmp(:)
+   integer :: n
+   
+   n = this%size()
+         
+   call move_alloc (this%elements, tmp)
+   allocate (this%elements(n+1))
+   this%elements(1:n) = tmp
+         
+   this%elements(n+1) = item
+   
+end subroutine
+
+
+function begin_iVector (this) result(begin)
+   type (iVectorIterator) :: begin
+   class (iVector), target, intent(in) :: this
+end function
+
+function end_iVector (this) result(end)
+   type (iVectorIterator) :: end
+   class (iVector), target, intent(in) :: this
+end function
+
+
+function get_iVector(this) result(get)
+   type (integer), pointer :: get
+   class (iVectorIterator), intent(in) :: this
+end function
+
+subroutine next_iVector(this)
+   class (iVectorIterator), intent(inout) :: this
+end subroutine
+
+
+# 8 "./set_impl.inc" 2 
+
+
+
+
+
+
+
+
+
+# 1 "./vector_impl.inc" 1 
+! args tVector, Pair, tVectorIterator
+
+# 1 "./macros.inc" 1 
+
+
+
+
+
+
+
+
+
+
+
+   
+
+
+
+   
+# 4 "./vector_impl.inc" 2 
+
+
+integer function size_tVector(this) result(size_)
+   class (tVector), intent(in) :: this
+   size_ = size(this%elements)
+end function
+
+function at_tVector(this, i) result(at)
+   type (Pair), pointer :: at
+   class (tVector), target :: this
+   integer, intent(in) :: i
+
+   at => this%elements(i)
+
+end function
+
+function back_tVector(this) result(back)
+   type (Pair), pointer :: back
+   class (tVector), target :: this
+
+   back => this%elements(size(this%elements))
+end function
+
+
+subroutine push_back_tVector (this, item)
+   class (tVector), intent(inout) :: this
+   type (Pair), intent(in) :: item
+   
+   type (Pair), allocatable :: tmp(:)
+   integer :: n
+   
+   n = this%size()
+         
+   call move_alloc (this%elements, tmp)
+   allocate (this%elements(n+1))
+   this%elements(1:n) = tmp
+         
+   this%elements(n+1) = item
+   
+end subroutine
+
+
+function begin_tVector (this) result(begin)
+   type (tVectorIterator) :: begin
+   class (tVector), target, intent(in) :: this
+end function
+
+function end_tVector (this) result(end)
+   type (tVectorIterator) :: end
+   class (tVector), target, intent(in) :: this
+end function
+
+
+function get_tVector(this) result(get)
+   type (Pair), pointer :: get
+   class (tVectorIterator), intent(in) :: this
+end function
+
+subroutine next_tVector(this)
+   class (tVectorIterator), intent(inout) :: this
+end subroutine
+
+
+# 18 "./set_impl.inc" 2 
+
+
+
+
+
+# 1 "./macros.inc" 1 
+
+
+
+
+
+
+
+
+
+
+
+   
+
+
+
+   
+# 24 "./set_impl.inc" 2 
+
+
+
+   integer function size_Set(this) result(size_)
+      class (Set), intent(in) :: this
+      size_ = this%tsize
+   end function
+
+   subroutine insert_Set(this, value)
+      class (Set), intent(inout) :: this
+      type (Pair), intent(in) :: value
+   end subroutine
+
+   function find_Set(this, value) result(find)
+      type (SetIterator) :: find
+      class (Set), target, intent(in) :: this
+      type (Pair), intent(in) :: value
+   end function
+
+   function begin_Set(this) result(begin)
+      type (SetIterator) :: begin
+      class (Set), target, intent(in) :: this
+   end function
+
+
+   function end_Set(this) result(end)
+      type (SetIterator) :: end
+      class (Set), target, intent(in) :: this
+   end function
+
+
+! Iterator methods
+
+   function get_Set(this) result(get)
+      type (Pair), pointer :: get
+      class (SetIterator), intent(in) :: this
+   end function
+
+   subroutine next_Set(this)
+      class (SetIterator), intent(inout) :: this
+   end subroutine
+
+
+# 8 "./map_impl.inc" 2 
+
+
+
+
+
+
+# 1 "./macros.inc" 1 
+
+
+
+
+
+
+
+
+
+
+
+   
+
+
+
+   
+# 15 "./map_impl.inc" 2 
+
+
+integer function size_SparseTable(this) result(size_)
+   class (SparseTable), intent(in) :: this
+end function
+
+subroutine insert_key_value_SparseTable(this, key, value)
+   class (SparseTable), target, intent(inout) :: this
+   type (integer), intent(in) :: key
+   type (real), intent(in) :: value
+
+   call this%insert(Pair(key,value))
+
+end subroutine
+
+subroutine insert_pair_SparseTable(this, p)
+   class (SparseTable), target, intent(inout) :: this
+   type (Pair), intent(in) :: p
+
+   call this%tree%insert(p)
+
+end subroutine
+
+function begin_SparseTable(this) result(begin)
+   type (SparseTableIterator) :: begin
+   class (SparseTable), target, intent(in) :: this
+end function
+
+function end_SparseTable(this) result(end)
+   type (SparseTableIterator) :: end
+   class (SparseTable), target, intent(in) :: this
+end function
+
+
+function get_key_SparseTable(this) result(key)
+   type (integer), pointer :: key
+   class (SparseTableIterator), intent(in) :: this
+end function
+
+function get_value_SparseTable(this) result(value)
+   type (real), pointer :: value
+   class (SparseTableIterator), intent(in) :: this
+end function
+
+
+subroutine next_SparseTable(this)
+   class (SparseTableIterator), intent(inout) :: this
+end subroutine
+
+
+logical function equal_SparseTable(a,b) result(equal)
+   class (SparseTableIterator), intent(in) :: a
+   class (SparseTableIterator), intent(in) :: b
+end function
+
+logical function not_equal_SparseTable(a,b) result(not_equal)
+   class (SparseTableIterator), intent(in) :: a
+   class (SparseTableIterator), intent(in) :: b
+   not_equal = .not. (a == b)
+end function
+
+
+# 17 "./map.inc" 2 
+
+
+
+
+
+# 12 "demo.F90" 2 
+
+
+
+
+
+
+
+end module SparseTable_mod
+
+program main
+   use SparseTable_mod
+
+   type (SparseTable), target :: my_table
+   type (SparseTableIterator) :: iter
+
+   integer, pointer :: k
+   real, pointer :: v 
+
+! Add 3 entries to the sparse table
+   call my_table%insert(1,  sqrt(2.))
+   call my_table%insert(20, 3.14)
+   call my_table%insert(2**14, -1.2)
+
+! Loop over the table and list the entries
+   iter = my_table%begin()
+   do while (iter /= my_table%end())
+      k => iter%get_key()
+      v => iter%get_value()
+      print*,'Element:  ', k, v
+      call iter%next()
+   end do
+
+end program main
